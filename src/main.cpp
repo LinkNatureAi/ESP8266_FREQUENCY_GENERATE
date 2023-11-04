@@ -1,49 +1,33 @@
 #include <Arduino.h>
 #include <Ticker.h>
 
-Ticker blinker;
+#define ledPin D2
+#define signalPin D4
 
-// Define pin constants
-const int ledPin = D2;
-const int signalPin = D4;
+Ticker signalTicker;
 
-// Define signal parameters
-const int frequency = 5;                          // Frequency in 5Hz
-const unsigned long period = 1000000 / frequency; // Period in microseconds
+const int desiredFrequency = 50; // Desired frequency in 50Hz
+float interval; // Interval between signal toggles in microseconds
 
-volatile bool signalState = LOW; // Initialize signal state
-
-// Function to generate low-frequency signal
-void ICACHE_RAM_ATTR onTimerISR()
-{
-  signalState = !signalState;           // Toggle signal state
-  digitalWrite(signalPin, signalState); // Set pin state
-  timer1_write(period);
+void toggleSignal() {
+  static bool toggle = false; // Static variable to remember the state of the signal
+  digitalWrite(signalPin, toggle = !toggle); 
 }
 
-void setup()
-{
-  // Initialize serial communication
-  Serial.begin(115200);
+void setup() {
+  Serial.begin(115200); 
+  pinMode(signalPin, OUTPUT); 
+  pinMode(ledPin, OUTPUT); 
 
-  // Initialize pin modes
-  pinMode(ledPin, OUTPUT);
-  pinMode(signalPin, OUTPUT);
-  digitalWrite(signalPin, LOW); // Ensure the signal pin is initially LOW
-
-  // Set up the timer interrupt for generating low-frequency signal
-  timer1_attachInterrupt(onTimerISR);
-  timer1_enable(TIM_DIV16, TIM_EDGE, TIM_SINGLE); // Use a lower timer division for a lower frequency
-  timer1_write(period);
+  interval = 1.0 / desiredFrequency * 1000000; // Calculate interval based on desired frequency
+  signalTicker.attach(interval / 1000000, toggleSignal); // Attach toggleSignal function to Ticker
 }
 
-void loop()
-{
-  // Blink the LED every 1 second
-  digitalWrite(ledPin, HIGH);
+void loop() {
+  digitalWrite(ledPin, HIGH); 
   Serial.println("LED status: " + String(digitalRead(ledPin)));
-  delay(1000);
+  delay(2000);
   digitalWrite(ledPin, LOW);
   Serial.println("LED status: " + String(digitalRead(ledPin)));
-  delay(1000);
+  delay(2000);
 }
