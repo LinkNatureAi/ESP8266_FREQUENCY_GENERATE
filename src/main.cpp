@@ -7,7 +7,6 @@
 Ticker signalTicker;
 
 const int desiredFrequency = 50; // Desired frequency in 50Hz
-float interval; // Interval between signal toggles in microseconds
 
 void toggleSignal() {
   static bool toggle = false; // Static variable to remember the state of the signal
@@ -19,7 +18,7 @@ void setup() {
   pinMode(signalPin, OUTPUT); 
   pinMode(ledPin, OUTPUT); 
 
-  interval = 1.0 / desiredFrequency * 1000000; // Calculate interval based on desired frequency
+ float interval = 1.0 / desiredFrequency * 1000000; // Calculate interval based on desired frequency
   signalTicker.attach(interval / 1000000, toggleSignal); // Attach toggleSignal function to Ticker
 }
 
